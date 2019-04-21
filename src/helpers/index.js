@@ -1,4 +1,4 @@
-import * as Valid from './valid';
+import * as Valid from './Valid';
 
 export {
   Valid
