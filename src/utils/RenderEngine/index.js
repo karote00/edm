@@ -1,5 +1,5 @@
 import Rectangle from './Rectangle';
-import { vsSource, fsSource } from './Shader';
+import Shader from './Shader';
 import { mat4 } from 'gl-matrix';
 
 /** Render engine for WebGL */
@@ -24,7 +24,7 @@ class RenderEngine {
     // Clear background
     gl.clearColor(0, 0, 0, 1);
 
-    const shaderProgram = this.initShaderProgram(vsSource, fsSource);
+    const shaderProgram = Shader.initShaderProgram(gl, Shader.vsSource, Shader.fsSource);
     this.programInfo = {
       program: shaderProgram,
       attribLocations: {
@@ -37,6 +37,11 @@ class RenderEngine {
     };
   }
 
+  /**
+   * @function initBuffers
+   * @param {array} positions - position list of the shape
+   * @return The object of the position buffer
+   */
   initBuffers(positions) {
     const gl = this.gl;
 
@@ -58,54 +63,6 @@ class RenderEngine {
     };
   }
 
-  /**
-   * @function loadShader
-   * @description Create a shader of the giver type, uploads the source and compiles it.
-   */
-  loadShader(type, source) {
-    const gl = this.gl;
-    const shader = gl.createShader(type);
-
-    // Send the source to the shader object
-    gl.shaderSource(shader, source);
-
-    // Compile the shader program
-    gl.compileShader(shader);
-
-    // See if it compiled successfully
-    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-      alert('An error occurred compiling the shaders: ' + gl.getShaderInfoLog(shader));
-      gl.deleteShader(shader);
-      return null;
-    }
-
-    return shader;
-  }
-
-  /**
-   * @function initShaderProgram
-   * @description Initial shader program with WebGL
-   */
-  initShaderProgram(vsSource, fsSource) {
-    const gl = this.gl;
-    const vertexShader = this.loadShader(gl.VERTEX_SHADER, vsSource);
-    const fragmentShader = this.loadShader(gl.FRAGMENT_SHADER, fsSource);
-
-    // Create shader program
-    const shaderProgram = this.gl.createProgram();
-    gl.attachShader(shaderProgram, vertexShader);
-    gl.attachShader(shaderProgram, fragmentShader);
-    gl.linkProgram(shaderProgram);
-
-    // Error handle
-    if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
-      alert('Unable to initialize the shader program: ' + gl.getProgramInfoLog(shaderProgram));
-      return null;
-    }
-
-    return shaderProgram;
-  }
-
   drawScene() {
     const gl = this.gl;
     gl.clear(gl.COLOR_BUFFER_BIT);   // 設定為全黑
@@ -125,7 +82,7 @@ class RenderEngine {
     const fieldOfView = 45 * Math.PI / 180;   // in radians
     const aspect = (gl.canvas.clientWidth / gl.canvas.clientHeight) * 1;
     const zNear = 0.1;
-    const zFar = 100.0;
+    const zFar = 300.0;
     const projectionMatrix = mat4.create();
 
     // note: glmatrix.js always has the first argument
@@ -145,7 +102,7 @@ class RenderEngine {
 
     mat4.translate(modelViewMatrix,     // destination matrix
                    modelViewMatrix,     // matrix to translate
-                   [-0.0, 0.0, -6.0]);  // amount to translate
+                   [-0.0, 0.0, -300.0]);  // amount to translate
 
     // Tell WebGL how to pull out the positions from the position
     // buffer into the vertexPosition attribute.
@@ -156,7 +113,7 @@ class RenderEngine {
       const stride = 0;         // how many bytes to get from one set of values to the next
                                 // 0 = use type and numComponents above
       const offset = 0;         // how many bytes inside the buffer to start from
-      const rect = new Rectangle({ x: 0, y: 0, width: 2, height: 2 });
+      const rect = new Rectangle({ x: 0, y: 0, width: 100, height: 100 });
       const rectBuffer = this.initBuffers(rect.positions());
       gl.bindBuffer(gl.ARRAY_BUFFER, rectBuffer.position);
       gl.vertexAttribPointer(
@@ -190,6 +147,10 @@ class RenderEngine {
     }
   }
 
+  /**
+   * @function drawRectangle
+   * @param {object} props - All props that a Rectangle needs
+   */
   drawRectangle(props) {
     const rect = new Rectangle(this, props);
     this.displayObjects[rect.id] = rect;
