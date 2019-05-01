@@ -13,7 +13,7 @@ class RenderEngine {
    */
   init(canvasId) {
     const canvas = document.getElementById(canvasId);
-    const gl = canvas.getContext('webgl');
+    const gl = this.checkWebGL(canvas);
     this.gl = gl;
 
     if (gl === null) {
@@ -21,8 +21,11 @@ class RenderEngine {
       return;
     }
 
-    // Clear background
+    // Clear background to black
     gl.clearColor(0, 0, 0, 1);
+
+    // Clear canvas
+    gl.clear(gl.COLOR_BUFFER_BIT);
 
     const shaderProgram = Shader.initShaderProgram(gl, Shader.vsSource, Shader.fsSource);
     this.programInfo = {
@@ -35,6 +38,27 @@ class RenderEngine {
         modelViewMatrix: gl.getUniformLocation(shaderProgram, 'uModelViewMatrix'),
       },
     };
+  }
+
+  /**
+   * Check if WebGL is available
+   */
+  checkWebGL (canvas) {
+    const contexts = ['webgl', 'experimental-webgl', 'webkit-3d', 'moz-webgl'];
+    let gl;
+    contexts.forEach(ctx => {
+      if (!gl) {
+        try {
+          gl = canvas.getContext(ctx);
+        } catch (e) {}
+      }
+    });
+
+    if (!gl) {
+      alert('WebGL not available, sorry! Please use a new version of Chrome or Firefox.');
+    }
+
+    return gl;
   }
 
   /**
@@ -65,8 +89,7 @@ class RenderEngine {
 
   drawScene() {
     const gl = this.gl;
-    gl.clear(gl.COLOR_BUFFER_BIT);   // 設定為全黑
-    gl.clearDepth(1.0);                   // 清除所有東西
+    gl.clearDepth(1.0);              // 清除所有東西
     gl.enable(gl.DEPTH_TEST);        // Enable 深度測試
     gl.depthFunc(gl.LEQUAL);         // Near things obscure far things
 
