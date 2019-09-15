@@ -5,7 +5,6 @@ import './App.css';
 class App extends Component {
   componentDidMount() {
     RenderEngine.init('glCanvas');
-    RenderEngine.drawScene();
   }
 
   render() {

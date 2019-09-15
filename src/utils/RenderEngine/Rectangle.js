@@ -6,6 +6,7 @@ class Rectangle {
   constructor(props) {
     this.uuid = uuid();
     this.props = props;
+    this.positions = this.positions();
   }
 
   positions() {
@@ -22,13 +23,15 @@ class Rectangle {
 
       if (width > 0 && height > 0) {
         // Calculate rectangle position with x, y, width and height
-        const halfWidth = width / 2;
-        const halfHeight = height / 2;
+        const x1 = x - width / 2;
+        const y1 = y - height / 2;
+        const x2 = x + width / 2;
+        const y2 = y + height / 2;
         const positions = [
-          x - halfWidth, y - halfHeight, // Left-Top
-          x + halfWidth, y - halfHeight, // Right-Top
-          x - halfWidth, y + halfHeight, // Left-Bottom
-          x + halfWidth, y + halfHeight  // Right-Bottom
+          x1, y1,
+          x2, y1,
+          x1, y2,
+          x2, y2
         ];
 
         return positions;
