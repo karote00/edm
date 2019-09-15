@@ -13,7 +13,6 @@ class RenderEngine {
   constructor(canvas, options) {
     this.initOptions(options)
     this.initContext(canvas);
-    this.resizeCanvasDimension();
   }
 
   /**
@@ -46,6 +45,9 @@ class RenderEngine {
     } else {
       this.canvas = canvas;
     }
+
+    // Update the size of drawingBuffer
+    this.resizeCanvasDimension(this.canvas);
     const gl = this.getWebGLContext(this.canvas);
     this.gl = gl;
 
@@ -132,23 +134,23 @@ class RenderEngine {
    * Resize canvas dimension
    * @function resizeCanvasDimension
    */
-  resizeCanvasDimension() {
-    const gl = this.gl;
+  resizeCanvasDimension(canvas) {
     var realToCSSPixels = window.devicePixelRatio;
 
     // Lookup the size the browser is displaying the canvas in CSS pixels
     // and compute a size needed to make our drawingbuffer match it in
     // device pixels.
-    var displayWidth  = Math.floor(gl.canvas.clientWidth  * realToCSSPixels);
-    var displayHeight = Math.floor(gl.canvas.clientHeight * realToCSSPixels);
+    var displayWidth  = Math.floor(canvas.clientWidth  * realToCSSPixels);
+    var displayHeight = Math.floor(canvas.clientHeight * realToCSSPixels);
 
     // Check if the canvas is not the same size.
-    if (gl.canvas.width  !== displayWidth ||
-        gl.canvas.height !== displayHeight) {
-
+    if (
+      canvas.width  !== displayWidth ||
+      canvas.height !== displayHeight
+    ) {
       // Make the canvas the same size
-      gl.canvas.width  = displayWidth;
-      gl.canvas.height = displayHeight;
+      canvas.width  = displayWidth;
+      canvas.height = displayHeight;
     }
   }
 
@@ -175,7 +177,7 @@ class RenderEngine {
     const fieldOfView = 45 * Math.PI / 180;   // in radians
     const aspect = (gl.canvas.clientWidth / gl.canvas.clientHeight);
     const zNear = 0.1;
-    const zFar = 100.0;
+    const zFar = 500.0;
     const projectionMatrix = mat4.create();
 
     // note: glmatrix.js always has the first argument
@@ -195,7 +197,7 @@ class RenderEngine {
 
     mat4.translate(modelViewMatrix,     // destination matrix
                    modelViewMatrix,     // matrix to translate
-                   [0.0, 0.0, -zFar]);  // amount to translate
+                   [0.0, 0.0, -200]);  // amount to translate
 
     mat4.rotate(modelViewMatrix,  // destination matrix
               modelViewMatrix,  // matrix to rotate
