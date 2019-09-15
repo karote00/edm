@@ -8,12 +8,45 @@ class RenderEngine {
   displayObjects = {}
 
   /**
-   * @function init
-   * @description Init WebGL to specific canvas
+   * @constructor
    */
-  init(canvasId) {
-    const canvas = document.getElementById(canvasId);
-    const gl = this.getWebGLContext(canvas);
+  constructor(canvas, options) {
+    this.initOptions(options)
+    this.initContext(canvas);
+    this.resizeCanvasDimension();
+  }
+
+  /**
+   * Initial options
+   * @function initOptions
+   */
+  initOptions(options) {
+    for (let op of Object.getOwnPropertyNames(options)) {
+      switch (op) {
+        case 'background': {
+          this.canvasBG = options[op];
+          if (options[op][3] === undefined) {
+            this.canvasBG[3] = 1;
+          }
+          break;
+        }
+        default:
+          break;
+      }
+    }
+  }
+
+  /**
+   * Initial WebGL to specific canvas
+   * @function initial context
+   */
+  initContext(canvas, options) {
+    if (typeof canvas === 'string') {
+      this.canvas = document.getElementById(canvas);
+    } else {
+      this.canvas = canvas;
+    }
+    const gl = this.getWebGLContext(this.canvas);
     this.gl = gl;
 
     if (gl === null) {
@@ -34,21 +67,6 @@ class RenderEngine {
       },
     };
 
-    this.resizeCanvasDimension(gl);
-    this.time = 0;
-    this.squareRotation = 0;
-    this.render(this.time);
-  }
-
-  render (now) {
-    now *= 0.001;  // convert to seconds
-    const deltaTime = now - this.time;
-    this.time = now;
-
-    this.drawScene(deltaTime);
-
-    // Draw the scene repeatedly
-    // requestAnimationFrame(this.render.bind(this));
   }
 
   /**
@@ -110,7 +128,12 @@ class RenderEngine {
     };
   }
 
-  resizeCanvasDimension(gl) {
+  /**
+   * Resize canvas dimension
+   * @function resizeCanvasDimension
+   */
+  resizeCanvasDimension() {
+    const gl = this.gl;
     var realToCSSPixels = window.devicePixelRatio;
 
     // Lookup the size the browser is displaying the canvas in CSS pixels
@@ -129,11 +152,10 @@ class RenderEngine {
     }
   }
 
-  drawScene(deltaTime) {
+  update() {
     const gl = this.gl;
-
     // Clear background to black
-    gl.clearColor(0, 0, 0, 1);
+    gl.clearColor(...this.canvasBG);
 
     // Clear canvas
     gl.clear(gl.COLOR_BUFFER_BIT);
@@ -177,7 +199,7 @@ class RenderEngine {
 
     mat4.rotate(modelViewMatrix,  // destination matrix
               modelViewMatrix,  // matrix to rotate
-              this.squareRotation,   // amount to rotate in radians
+              0,   // amount to rotate in radians
               [0, 0, 1]);       // axis to rotate around
 
 
@@ -244,8 +266,6 @@ class RenderEngine {
       const vertexCount = 4;
       gl.drawArrays(gl.TRIANGLE_STRIP, offset, vertexCount);
     }
-
-    this.squareRotation += deltaTime;
   }
 
   /**
@@ -258,4 +278,4 @@ class RenderEngine {
   }
 };
 
-export default new RenderEngine();
+export default RenderEngine;

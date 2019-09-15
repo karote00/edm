@@ -4,7 +4,11 @@ import './App.css';
 
 class App extends Component {
   componentDidMount() {
-    RenderEngine.init('glCanvas');
+    this.renderEngine = new RenderEngine('glCanvas', {
+      background: [0, 0, 0]
+    });
+
+    this.renderEngine.update();
   }
 
   render() {
