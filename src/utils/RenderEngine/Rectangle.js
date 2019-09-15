@@ -27,14 +27,12 @@ class Rectangle {
         const y1 = y - height / 2;
         const x2 = x + width / 2;
         const y2 = y + height / 2;
-        const positions = [
+        return [
           x1, y1,
           x2, y1,
           x1, y2,
           x2, y2
         ];
-
-        return positions;
       }
     }
 

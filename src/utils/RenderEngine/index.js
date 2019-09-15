@@ -21,12 +21,6 @@ class RenderEngine {
       return;
     }
 
-    // Clear background to black
-    gl.clearColor(0, 0, 0, 1);
-
-    // Clear canvas
-    gl.clear(gl.COLOR_BUFFER_BIT);
-
     const shaderProgram = Shader.initShaderProgram(gl, Shader.vsSource, Shader.fsSource);
     this.programInfo = {
       program: shaderProgram,
@@ -41,13 +35,20 @@ class RenderEngine {
     };
 
     this.resizeCanvasDimension(gl);
-    gl.clearDepth(1.0);              // 清除所有東西
-    gl.enable(gl.DEPTH_TEST);        // Enable 深度測試
-    gl.depthFunc(gl.LEQUAL);         // Near things obscure far things
+    this.time = 0;
+    this.squareRotation = 0;
+    this.render(this.time);
+  }
 
-    // Initial canvas
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    this.draw();
+  render (now) {
+    now *= 0.001;  // convert to seconds
+    const deltaTime = now - this.time;
+    this.time = now;
+
+    this.drawScene(deltaTime);
+
+    // Draw the scene repeatedly
+    // requestAnimationFrame(this.render.bind(this));
   }
 
   /**
@@ -128,8 +129,21 @@ class RenderEngine {
     }
   }
 
-  draw() {
+  drawScene(deltaTime) {
     const gl = this.gl;
+
+    // Clear background to black
+    gl.clearColor(0, 0, 0, 1);
+
+    // Clear canvas
+    gl.clear(gl.COLOR_BUFFER_BIT);
+
+    gl.clearDepth(1.0);              // 清除所有東西
+    gl.enable(gl.DEPTH_TEST);        // Enable 深度測試
+    gl.depthFunc(gl.LEQUAL);         // Near things obscure far things
+
+    // Initial canvas
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     // Create a perspective matrix, a special matrix that is
     // used to simulate the distortion of perspective in a camera.
     // Our field of view is 45 degrees, with a width/height
@@ -160,6 +174,12 @@ class RenderEngine {
     mat4.translate(modelViewMatrix,     // destination matrix
                    modelViewMatrix,     // matrix to translate
                    [0.0, 0.0, -zFar]);  // amount to translate
+
+    mat4.rotate(modelViewMatrix,  // destination matrix
+              modelViewMatrix,  // matrix to rotate
+              this.squareRotation,   // amount to rotate in radians
+              [0, 0, 1]);       // axis to rotate around
+
 
     // Tell WebGL how to pull out the positions from the position
     // buffer into the vertexPosition attribute.
@@ -224,6 +244,8 @@ class RenderEngine {
       const vertexCount = 4;
       gl.drawArrays(gl.TRIANGLE_STRIP, offset, vertexCount);
     }
+
+    this.squareRotation += deltaTime;
   }
 
   /**
